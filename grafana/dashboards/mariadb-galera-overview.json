@@ -1,0 +1,1726 @@
+{
+ "uid": "mariadb-galera-prod",
+ "title": "MariaDB Galera - Production Overview",
+ "tags": [
+  "mariadb",
+  "galera",
+  "opensearch"
+ ],
+ "timezone": "browser",
+ "schemaVersion": 39,
+ "version": 1,
+ "refresh": "10s",
+ "time": {
+  "from": "now-1h",
+  "to": "now"
+ },
+ "graphTooltip": 1,
+ "editable": true,
+ "templating": {
+  "list": []
+ },
+ "annotations": {
+  "list": []
+ },
+ "panels": [
+  {
+   "id": 1,
+   "type": "row",
+   "title": "Node availability (probed from vm4, outside the DB nodes)",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 0,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Host reachable (ping)",
+   "description": "1 = VM answers ping, 0 = down",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-heartbeat"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 1,
+    "w": 8,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-heartbeat"
+     },
+     "query": "check:host_ping",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "min",
+       "field": "up_value"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "1": {
+         "text": "UP",
+         "color": "green",
+         "index": 0
+        },
+        "0": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center"
+   }
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "MariaDB port 3306",
+   "description": "1 = accepting TCP connections, 0 = refused/timeout",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-heartbeat"
+   },
+   "gridPos": {
+    "x": 8,
+    "y": 1,
+    "w": 8,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-heartbeat"
+     },
+     "query": "check:mariadb_port",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "min",
+       "field": "up_value"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "1": {
+         "text": "UP",
+         "color": "green",
+         "index": 0
+        },
+        "0": {
+         "text": "DOWN",
+         "color": "red",
+         "index": 1
+        }
+       }
+      }
+     ],
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center"
+   }
+  },
+  {
+   "id": 4,
+   "type": "stat",
+   "title": "Galera cluster size seen by each node",
+   "description": "3 = healthy. Lower means this node sees a partitioned/shrunk cluster. No data = Metricbeat on that node is down.",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 16,
+    "y": 1,
+    "w": 8,
+    "h": 5
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:galera_status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.galera_status.cluster.size"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "none",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 2
+       },
+       {
+        "color": "green",
+        "value": 3
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "none",
+    "textMode": "value_and_name",
+    "justifyMode": "center"
+   }
+  },
+  {
+   "id": 5,
+   "type": "row",
+   "title": "Connections",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 6,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 6,
+   "type": "bargauge",
+   "title": "Avg connections per node (selected range)",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 7,
+    "w": 6,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "mysql.status.threads.connected"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "min": 0,
+     "color": {
+      "mode": "continuous-BlYlRd"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "mean"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "orientation": "horizontal",
+    "displayMode": "gradient",
+    "showUnfilled": true
+   }
+  },
+  {
+   "id": 7,
+   "type": "timeseries",
+   "title": "Threads connected",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 7,
+    "w": 9,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "mysql.status.threads.connected"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 8,
+   "type": "timeseries",
+   "title": "Threads running (active queries)",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 15,
+    "y": 7,
+    "w": 9,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "mysql.status.threads.running"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 9,
+   "type": "timeseries",
+   "title": "New connections / sec",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 15,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.connections",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "settings": {
+        "unit": "1s"
+       }
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 10,
+   "type": "timeseries",
+   "title": "Aborted connects / sec (auth/network failures)",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 15,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.aborted.connects",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "settings": {
+        "unit": "1s"
+       }
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 11,
+   "type": "row",
+   "title": "Reads",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 23,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 12,
+   "type": "bargauge",
+   "title": "Avg SELECT/s per node (selected range)",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 24,
+    "w": 6,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.command.select",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "settings": {
+        "unit": "1s"
+       }
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "min": 0,
+     "color": {
+      "mode": "continuous-BlYlRd"
+     }
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "mean"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "orientation": "horizontal",
+    "displayMode": "gradient",
+    "showUnfilled": true
+   }
+  },
+  {
+   "id": 13,
+   "type": "timeseries",
+   "title": "SELECT / sec",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 24,
+    "w": 9,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.command.select",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "settings": {
+        "unit": "1s"
+       }
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 14,
+   "type": "timeseries",
+   "title": "All queries / sec",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 15,
+    "y": 24,
+    "w": 9,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.queries",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "settings": {
+        "unit": "1s"
+       }
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 15,
+   "type": "row",
+   "title": "Galera health",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 32,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 16,
+   "type": "timeseries",
+   "title": "Flow control paused (fraction of time)",
+   "description": "Above ~0.1 means a slow node is throttling the cluster",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 33,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:galera_status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "mysql.galera_status.flow_ctl.paused"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 17,
+   "type": "timeseries",
+   "title": "Receive queue (avg)",
+   "description": "Growing queue = node cannot apply writesets fast enough",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 33,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:galera_status",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "mysql.galera_status.local.recv.queue.avg"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 18,
+   "type": "row",
+   "title": "Host resources",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 41,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 19,
+   "type": "timeseries",
+   "title": "CPU usage",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 42,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:cpu",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "system.cpu.total.norm.pct"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0,
+     "max": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 20,
+   "type": "timeseries",
+   "title": "Memory used",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 42,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "query": "metricset.name:memory",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "avg",
+       "field": "system.memory.actual.used.pct"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "auto",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "percentunit",
+     "custom": {
+      "drawStyle": "line",
+      "lineWidth": 1,
+      "fillOpacity": 10,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0,
+     "max": 1
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 21,
+   "type": "row",
+   "title": "Logs (from Filebeat)",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 50,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 22,
+   "type": "timeseries",
+   "title": "Slow queries (count)",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-logs"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 51,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-logs"
+     },
+     "query": "event.dataset:\"mysql.slowlog\"",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "1m",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "bars",
+      "lineWidth": 1,
+      "fillOpacity": 30,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 23,
+   "type": "timeseries",
+   "title": "Error / warning log lines (count)",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-logs"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 51,
+    "w": 12,
+    "h": 8
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-logs"
+     },
+     "query": "event.dataset:\"mysql.error\" AND NOT log.level:\"Note\"",
+     "queryType": "lucene",
+     "alias": "{{term node_name}}",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "count"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "1m",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "custom": {
+      "drawStyle": "bars",
+      "lineWidth": 1,
+      "fillOpacity": 30,
+      "showPoints": "never",
+      "spanNulls": false
+     },
+     "min": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "legend": {
+     "displayMode": "table",
+     "placement": "bottom",
+     "calcs": [
+      "mean",
+      "max",
+      "lastNotNull"
+     ]
+    },
+    "tooltip": {
+     "mode": "multi"
+    }
+   }
+  },
+  {
+   "id": 24,
+   "type": "logs",
+   "title": "Recent error / warning log lines",
+   "description": "",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-logs"
+   },
+   "gridPos": {
+    "x": 0,
+    "y": 59,
+    "w": 24,
+    "h": 10
+   },
+   "targets": [
+    {
+     "refId": "A",
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-logs"
+     },
+     "query": "event.dataset:\"mysql.error\" AND NOT log.level:\"Note\"",
+     "queryType": "lucene",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "logs",
+       "settings": {
+        "limit": "100"
+       }
+      }
+     ],
+     "bucketAggs": [],
+     "timeField": "@timestamp"
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short"
+    },
+    "overrides": []
+   },
+   "options": {
+    "showTime": true,
+    "wrapLogMessage": true,
+    "sortOrder": "Descending",
+    "enableLogDetails": true
+   }
+  }
+ ]
+}
