@@ -6,10 +6,11 @@
   "galera"
  ],
  "schemaVersion": 39,
- "version": 1,
+ "version": 2,
  "editable": true,
  "refresh": "10s",
  "timezone": "browser",
+ "graphTooltip": 1,
  "time": {
   "from": "now-15m",
   "to": "now"
@@ -23,30 +24,17 @@
  "panels": [
   {
    "id": 1,
-   "type": "row",
-   "title": "Cluster health",
-   "collapsed": false,
-   "gridPos": {
-    "x": 0,
-    "y": 0,
-    "w": 24,
-    "h": 1
-   },
-   "panels": []
-  },
-  {
-   "id": 2,
    "type": "stat",
-   "title": "Cluster size (wsrep_cluster_size)",
+   "title": "Cluster size",
    "datasource": {
     "type": "grafana-opensearch-datasource",
     "uid": "os-metrics"
    },
    "gridPos": {
     "x": 0,
-    "y": 1,
+    "y": 0,
     "w": 6,
-    "h": 5
+    "h": 4
    },
    "targets": [
     {
@@ -56,13 +44,201 @@
      },
      "refId": "A",
      "queryType": "lucene",
-     "query": "metricset.name:galera_status",
+     "query": "metricset.name:galera_status AND _exists_:mysql.galera_status.cluster.size",
      "timeField": "@timestamp",
      "metrics": [
       {
        "id": "1",
        "type": "max",
        "field": "mysql.galera_status.cluster.size"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "30s",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ]
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 2
+       },
+       {
+        "color": "green",
+        "value": 3
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     },
+     "noValue": "-",
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   },
+   "description": "wsrep_cluster_size. 3 = all nodes in the cluster."
+  },
+  {
+   "id": 2,
+   "type": "stat",
+   "title": "Monitors up",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-heartbeat"
+   },
+   "gridPos": {
+    "x": 6,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-heartbeat"
+     },
+     "refId": "A",
+     "queryType": "lucene",
+     "query": "monitor.status:up",
+     "timeField": "@timestamp",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "cardinality",
+       "field": "monitor.name"
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "1m",
+        "min_doc_count": "0",
+        "trimEdges": "1"
+       }
+      }
+     ]
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "short",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 2
+       },
+       {
+        "color": "green",
+        "value": 3
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     },
+     "noValue": "-",
+     "decimals": 0
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   },
+   "description": "Distinct Heartbeat monitors that reported up in the last minute."
+  },
+  {
+   "id": 3,
+   "type": "stat",
+   "title": "Queries / sec (all nodes)",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 12,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "refId": "A",
+     "queryType": "lucene",
+     "query": "metricset.name:status AND _exists_:mysql.status.connections",
+     "timeField": "@timestamp",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.queries",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "pipelineAgg": "1",
+       "settings": {
+        "unit": "1s"
+       }
       }
      ],
      "bucketAggs": [
@@ -92,24 +268,21 @@
    ],
    "fieldConfig": {
     "defaults": {
-     "unit": "short",
+     "unit": "ops",
      "thresholds": {
       "mode": "absolute",
       "steps": [
        {
-        "color": "red",
+        "color": "blue",
         "value": null
-       },
-       {
-        "color": "orange",
-        "value": 2
-       },
-       {
-        "color": "green",
-        "value": 3
        }
       ]
-     }
+     },
+     "color": {
+      "mode": "thresholds"
+     },
+     "noValue": "-",
+     "decimals": 1
     },
     "overrides": []
    },
@@ -118,17 +291,182 @@
      "calcs": [
       "lastNotNull"
      ],
-     "fields": "",
+     "fields": "/^Total$/",
      "values": false
     },
-    "colorMode": "value",
+    "colorMode": "background",
     "graphMode": "area",
-    "textMode": "value_and_name",
-    "orientation": "vertical"
-   }
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   },
+   "transformations": [
+    {
+     "id": "joinByField",
+     "options": {
+      "byField": "Time",
+      "mode": "outer"
+     }
+    },
+    {
+     "id": "calculateField",
+     "options": {
+      "mode": "reduceRow",
+      "reduce": {
+       "reducer": "sum"
+      },
+      "alias": "Total",
+      "replaceFields": true
+     }
+    }
+   ],
+   "description": "Sum of the per-node query rates."
   },
   {
-   "id": 3,
+   "id": 4,
+   "type": "stat",
+   "title": "Aborted connects / sec",
+   "datasource": {
+    "type": "grafana-opensearch-datasource",
+    "uid": "os-metrics"
+   },
+   "gridPos": {
+    "x": 18,
+    "y": 0,
+    "w": 6,
+    "h": 4
+   },
+   "targets": [
+    {
+     "datasource": {
+      "type": "grafana-opensearch-datasource",
+      "uid": "os-metrics"
+     },
+     "refId": "A",
+     "queryType": "lucene",
+     "query": "metricset.name:status AND _exists_:mysql.status.connections",
+     "timeField": "@timestamp",
+     "metrics": [
+      {
+       "id": "1",
+       "type": "max",
+       "field": "mysql.status.aborted.connects",
+       "hide": true
+      },
+      {
+       "id": "4",
+       "type": "derivative",
+       "field": "1",
+       "pipelineAgg": "1",
+       "settings": {
+        "unit": "1s"
+       }
+      }
+     ],
+     "bucketAggs": [
+      {
+       "id": "2",
+       "type": "terms",
+       "field": "node_name",
+       "settings": {
+        "size": "10",
+        "order": "asc",
+        "orderBy": "_term",
+        "min_doc_count": "1"
+       }
+      },
+      {
+       "id": "3",
+       "type": "date_histogram",
+       "field": "@timestamp",
+       "settings": {
+        "interval": "10s",
+        "min_doc_count": "0",
+        "trimEdges": "0"
+       }
+      }
+     ]
+    }
+   ],
+   "fieldConfig": {
+    "defaults": {
+     "unit": "ops",
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "green",
+        "value": null
+       },
+       {
+        "color": "orange",
+        "value": 0.1
+       },
+       {
+        "color": "red",
+        "value": 1
+       }
+      ]
+     },
+     "color": {
+      "mode": "thresholds"
+     },
+     "noValue": "-",
+     "decimals": 2
+    },
+    "overrides": []
+   },
+   "options": {
+    "reduceOptions": {
+     "calcs": [
+      "lastNotNull"
+     ],
+     "fields": "/^Total$/",
+     "values": false
+    },
+    "colorMode": "background",
+    "graphMode": "area",
+    "textMode": "value",
+    "justifyMode": "center",
+    "orientation": "auto"
+   },
+   "transformations": [
+    {
+     "id": "joinByField",
+     "options": {
+      "byField": "Time",
+      "mode": "outer"
+     }
+    },
+    {
+     "id": "calculateField",
+     "options": {
+      "mode": "reduceRow",
+      "reduce": {
+       "reducer": "sum"
+      },
+      "alias": "Total",
+      "replaceFields": true
+     }
+    }
+   ],
+   "description": "Sum across nodes. Green = normal, orange > 0.1/s, red > 1/s."
+  },
+  {
+   "id": 5,
+   "type": "row",
+   "title": "Cluster health",
+   "collapsed": false,
+   "gridPos": {
+    "x": 0,
+    "y": 4,
+    "w": 24,
+    "h": 1
+   },
+   "panels": []
+  },
+  {
+   "id": 6,
    "type": "timeseries",
    "title": "Threads connected",
    "datasource": {
@@ -136,10 +474,10 @@
     "uid": "os-metrics"
    },
    "gridPos": {
-    "x": 6,
-    "y": 1,
-    "w": 9,
-    "h": 8
+    "x": 0,
+    "y": 5,
+    "w": 12,
+    "h": 9
    },
    "targets": [
     {
@@ -188,31 +526,103 @@
      "unit": "short",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 4,
+   "id": 7,
    "type": "timeseries",
    "title": "Threads running",
    "datasource": {
@@ -220,10 +630,10 @@
     "uid": "os-metrics"
    },
    "gridPos": {
-    "x": 15,
-    "y": 1,
-    "w": 9,
-    "h": 8
+    "x": 12,
+    "y": 5,
+    "w": 12,
+    "h": 9
    },
    "targets": [
     {
@@ -272,31 +682,103 @@
      "unit": "short",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 5,
+   "id": 8,
    "type": "timeseries",
    "title": "New connections / sec",
    "datasource": {
@@ -305,9 +787,9 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 9,
+    "y": 14,
     "w": 12,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -366,31 +848,103 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 6,
+   "id": 9,
    "type": "timeseries",
    "title": "Aborted connects / sec (auth/network failures)",
    "datasource": {
@@ -399,9 +953,9 @@
    },
    "gridPos": {
     "x": 12,
-    "y": 9,
+    "y": 14,
     "w": 12,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -460,44 +1014,116 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 7,
+   "id": 10,
    "type": "row",
    "title": "Reads",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 17,
+    "y": 23,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 8,
+   "id": 11,
    "type": "stat",
    "title": "Avg SELECT/s per node",
    "datasource": {
@@ -506,9 +1132,9 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 18,
+    "y": 24,
     "w": 6,
-    "h": 5
+    "h": 9
    },
    "targets": [
     {
@@ -569,13 +1195,65 @@
       "mode": "absolute",
       "steps": [
        {
-        "color": "green",
+        "color": "blue",
         "value": null
        }
       ]
-     }
+     },
+     "color": {
+      "mode": "fixed",
+      "fixedColor": "#2a78d6"
+     },
+     "noValue": "-",
+     "decimals": 2
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "reduceOptions": {
@@ -588,11 +1266,12 @@
     "colorMode": "value",
     "graphMode": "area",
     "textMode": "value_and_name",
+    "justifyMode": "center",
     "orientation": "vertical"
    }
   },
   {
-   "id": 9,
+   "id": 12,
    "type": "timeseries",
    "title": "SELECT / sec",
    "datasource": {
@@ -601,9 +1280,9 @@
    },
    "gridPos": {
     "x": 6,
-    "y": 18,
+    "y": 24,
     "w": 9,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -662,31 +1341,103 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 10,
+   "id": 13,
    "type": "timeseries",
    "title": "All queries / sec",
    "datasource": {
@@ -695,9 +1446,9 @@
    },
    "gridPos": {
     "x": 15,
-    "y": 18,
+    "y": 24,
     "w": 9,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -756,44 +1507,116 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 11,
+   "id": 14,
    "type": "row",
    "title": "Writes",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 26,
+    "y": 33,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 12,
+   "id": 15,
    "type": "timeseries",
    "title": "INSERT / sec",
    "datasource": {
@@ -802,9 +1625,9 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 27,
+    "y": 34,
     "w": 8,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -863,31 +1686,103 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 13,
+   "id": 16,
    "type": "timeseries",
    "title": "UPDATE / sec",
    "datasource": {
@@ -896,9 +1791,9 @@
    },
    "gridPos": {
     "x": 8,
-    "y": 27,
+    "y": 34,
     "w": 8,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -957,31 +1852,103 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 14,
+   "id": 17,
    "type": "timeseries",
    "title": "DELETE / sec",
    "datasource": {
@@ -990,9 +1957,9 @@
    },
    "gridPos": {
     "x": 16,
-    "y": 27,
+    "y": 34,
     "w": 8,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -1051,44 +2018,116 @@
      "unit": "ops",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 15,
+   "id": 18,
    "type": "row",
-   "title": "Network & InnoDB",
+   "title": "Network and InnoDB",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 35,
+    "y": 43,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 16,
+   "id": 19,
    "type": "timeseries",
    "title": "Bytes received / sec",
    "datasource": {
@@ -1097,9 +2136,9 @@
    },
    "gridPos": {
     "x": 0,
-    "y": 36,
+    "y": 44,
     "w": 8,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -1158,31 +2197,103 @@
      "unit": "Bps",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 17,
+   "id": 20,
    "type": "timeseries",
    "title": "Bytes sent / sec",
    "datasource": {
@@ -1191,9 +2302,9 @@
    },
    "gridPos": {
     "x": 8,
-    "y": 36,
+    "y": 44,
     "w": 8,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -1252,31 +2363,103 @@
      "unit": "Bps",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 18,
+   "id": 21,
    "type": "timeseries",
    "title": "InnoDB dirty pages",
    "datasource": {
@@ -1285,9 +2468,9 @@
    },
    "gridPos": {
     "x": 16,
-    "y": 36,
+    "y": 44,
     "w": 8,
-    "h": 8
+    "h": 9
    },
    "targets": [
     {
@@ -1336,55 +2519,127 @@
      "unit": "short",
      "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
+      "lineWidth": 2,
+      "fillOpacity": 10,
+      "gradientMode": "none",
+      "spanNulls": false,
+      "showPoints": "never",
+      "lineInterpolation": "smooth"
      }
     },
-    "overrides": []
+    "overrides": [
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-01.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#2a78d6"
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-02.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#eb6834"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          10,
+          10
+         ]
+        }
+       }
+      ]
+     },
+     {
+      "matcher": {
+       "id": "byRegexp",
+       "options": ".*db-node-03.*"
+      },
+      "properties": [
+       {
+        "id": "color",
+        "value": {
+         "mode": "fixed",
+         "fixedColor": "#1baf7a"
+        }
+       },
+       {
+        "id": "custom.lineStyle",
+        "value": {
+         "fill": "dash",
+         "dash": [
+          2,
+          6
+         ]
+        }
+       }
+      ]
+     }
+    ]
    },
    "options": {
     "legend": {
+     "showLegend": true,
      "displayMode": "table",
      "placement": "bottom",
      "calcs": [
+      "lastNotNull",
       "mean",
-      "max",
-      "lastNotNull"
-     ]
+      "max"
+     ],
+     "sortBy": "Last *",
+     "sortDesc": true
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "multi",
+     "sort": "desc"
     }
    }
   },
   {
-   "id": 19,
+   "id": 22,
    "type": "row",
    "title": "Uptime (Heartbeat)",
    "collapsed": false,
    "gridPos": {
     "x": 0,
-    "y": 44,
+    "y": 53,
     "w": 24,
     "h": 1
    },
    "panels": []
   },
   {
-   "id": 20,
-   "type": "timeseries",
-   "title": "Monitor checks up",
+   "id": 23,
+   "type": "status-history",
+   "title": "Monitor status (green = up, red = down)",
    "datasource": {
     "type": "grafana-opensearch-datasource",
     "uid": "os-heartbeat"
    },
    "gridPos": {
     "x": 0,
-    "y": 45,
+    "y": 54,
     "w": 24,
-    "h": 8
+    "h": 6
    },
    "targets": [
     {
@@ -1429,29 +2684,63 @@
    ],
    "fieldConfig": {
     "defaults": {
-     "unit": "short",
-     "min": 0,
      "custom": {
-      "lineWidth": 1,
-      "fillOpacity": 8,
-      "spanNulls": true,
-      "showPoints": "never"
-     }
+      "fillOpacity": 80,
+      "lineWidth": 1
+     },
+     "color": {
+      "mode": "thresholds"
+     },
+     "thresholds": {
+      "mode": "absolute",
+      "steps": [
+       {
+        "color": "red",
+        "value": null
+       },
+       {
+        "color": "green",
+        "value": 1
+       }
+      ]
+     },
+     "mappings": [
+      {
+       "type": "value",
+       "options": {
+        "0": {
+         "text": "Down",
+         "color": "red",
+         "index": 0
+        }
+       }
+      },
+      {
+       "type": "range",
+       "options": {
+        "from": 1,
+        "to": 1000,
+        "result": {
+         "text": "Up",
+         "color": "green",
+         "index": 1
+        }
+       }
+      }
+     ]
     },
     "overrides": []
    },
    "options": {
+    "showValue": "never",
+    "rowHeight": 0.9,
+    "colWidth": 0.95,
     "legend": {
-     "displayMode": "table",
-     "placement": "bottom",
-     "calcs": [
-      "mean",
-      "max",
-      "lastNotNull"
-     ]
+     "showLegend": true,
+     "placement": "bottom"
     },
     "tooltip": {
-     "mode": "multi"
+     "mode": "single"
     }
    }
   }
